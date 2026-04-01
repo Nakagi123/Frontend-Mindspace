@@ -24,13 +24,13 @@ function Navbar() {
                 href="#about" 
                 className="text-gray-700 hover:text-sky-500 transition-colors duration-200 py-2"
               >
-                About
+                Learn
               </a>
               <Link 
                 to="/emailform" 
                 className="text-gray-700 hover:text-sky-500 transition-colors duration-200 py-2"
               >
-                Contact
+                Plan
               </Link>
             </nav>
 
@@ -61,14 +61,14 @@ function Navbar() {
               className="text-gray-700 hover:text-sky-500 font-semibold transition-colors duration-200 py-2"
               onClick={() => setIsMenuOpen(false)}
             >
-              About
+              Learn
             </a>
             <Link 
               to="/emailform" 
               className="text-gray-700 hover:text-sky-500 font-semibold transition-colors duration-200 py-2"
               onClick={() => setIsMenuOpen(false)}
             >
-              Contact
+              Plan
             </Link>
           </nav>
         </div>
