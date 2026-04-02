@@ -28,10 +28,22 @@ function Navbar() {
                 Learn
               </Link>
               <Link 
-                to="/emailform" 
+                to="/plan" 
                 className="text-gray-700 hover:text-sky-500 transition-colors duration-200 py-2"
               >
                 Plan
+              </Link>
+              <Link 
+                to="/notes" 
+                className="text-gray-700 hover:text-sky-500 transition-colors duration-200 py-2"
+              >
+                Notes
+              </Link>
+              <Link 
+                to="/timer" 
+                className="text-gray-700 hover:text-sky-500 transition-colors duration-200 py-2"
+              >
+                Timer
               </Link>
             </nav>
 

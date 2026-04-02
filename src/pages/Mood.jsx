@@ -2,12 +2,16 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar"
 
-// 👇 Replace with your actual image imports
+import focusedImg   from "../assets/moods/mood-focused.png";
+import normalImg    from "../assets/moods/mood-normal.png";
+import lowEnergyImg from "../assets/moods/mood-low-energy.png";
+import tiredImg     from "../assets/moods/mood-tired.png";
+
 const IMAGES = {
-  focused:   "/assets/mood-focused.png",
-  normal:    "/assets/mood-normal.png",
-  lowEnergy: "/assets/mood-low-energy.png",
-  tired:     "/assets/mood-tired.png",
+  focused:   focusedImg,
+  normal:    normalImg,
+  lowEnergy: lowEnergyImg,
+  tired:     tiredImg,
 };
 
 const moods = [
@@ -53,7 +57,7 @@ const MoodButton = ({ mood, selected, onClick }) => (
     </span>
 
     {/* Face image */}
-    <div className={`relative rounded-full transition-all duration-200
+    <div className={`relative rounded-full transition-all duration-200 w-40 h-40 
       ${selected
         ? "ring-4 ring-gray-900 ring-offset-4 scale-105"
         : "ring-2 ring-transparent group-hover:ring-gray-200 group-hover:ring-offset-2"
@@ -61,7 +65,7 @@ const MoodButton = ({ mood, selected, onClick }) => (
       <img
         src={mood.image}
         alt={mood.label}
-        className={`w-28 h-28 object-cover rounded-full transition-all duration-200
+        className={`w-40 h-40 p-2 object-contain rounded-full transition-all duration-200
           ${selected ? "opacity-100" : "opacity-80 group-hover:opacity-100"}
           active:scale-95`}
       />
@@ -81,8 +85,6 @@ export default function Mood() {
 
   const handleSelect = (mood) => {
     setSelected(mood.key);
-    // Navigate after a short delay so the selection is visible
-    setTimeout(() => navigate(mood.route), 300);
   };
 
   return (
