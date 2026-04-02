@@ -32,7 +32,7 @@ return (
               </div>
  
               <div className="flex flex-col gap-3">
-                <h1 className="text-5xl font-bold text-gray-900 leading-tight tracking-tight">
+                <h1 className="text-8xl font-bold text-gray-900 leading-tight tracking-tight">
                   Learn at your<br />
                   <span className="text-gray-400">own pace</span>
                 </h1>
