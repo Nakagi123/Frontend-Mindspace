@@ -21,12 +21,12 @@ function Navbar() {
               >
                 Home
               </Link>
-              <a 
-                href="#about" 
+              <Link
+                to="/learn" 
                 className="text-gray-700 hover:text-sky-500 transition-colors duration-200 py-2"
               >
                 Learn
-              </a>
+              </Link>
               <Link 
                 to="/emailform" 
                 className="text-gray-700 hover:text-sky-500 transition-colors duration-200 py-2"
