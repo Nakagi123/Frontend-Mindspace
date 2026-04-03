@@ -43,7 +43,7 @@ function Navbar() {
                 to="/timer" 
                 className="text-gray-700 hover:text-sky-500 transition-colors duration-200 py-2"
               >
-                Timer
+                Focus
               </Link>
             </nav>
 
