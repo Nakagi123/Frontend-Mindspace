@@ -11,7 +11,7 @@ export default function FocusedStudy() {
     const [pace, setPace] = useState("Normal");
     const [difficulty, setDifficulty] = useState(0); // 0=Easy, 1=Medium, 2=Hard
     const navigate = useNavigate();
-    const { selectedMood } = useMood();
+    const { selectedMood, setPace: savePace, setDifficulty: saveDifficulty, setSummary } = useMood();
 
   const TITLES = {
     focused:   "Ready to go.",
@@ -27,10 +27,12 @@ export default function FocusedStudy() {
     tired:     "We'll simplify everything for you.",
   }
 
-  const handleSummarize = () => {
-    // TODO: handle summarize logic
-    console.log({ material, pace, difficulty: DIFFICULTY_LABELS[difficulty] });
-  };
+        const handleSummarize = () => {
+        savePace(pace);                               
+        saveDifficulty(difficulty);                   
+        setSummary("Your summary will appear here");  
+        navigate("/learn/results");                   
+        };
 
   return (
     <div>
