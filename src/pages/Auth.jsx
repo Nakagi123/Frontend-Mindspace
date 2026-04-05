@@ -15,22 +15,37 @@ const InputField = ({ placeholder, type = "text", value, onChange }) => (
 );
 
 export default function Auth() {
-  const [isLogin, setIsLogin] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const { login } = useAuth();
-  const navigate = useNavigate();
+    const [isLogin, setIsLogin] = useState(false);
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const { login } = useAuth();
+    const navigate = useNavigate();
 
-  const handleSubmit = () => {
-    // 👇 Replace with your actual API call later
+
+    const handleSubmit = () => {
+    // Validation
     if (isLogin) {
-      login({ name: email });
+        if (!name || !password) {
+        setError("Please fill in all fields.");
+        return;
+        }
     } else {
-      login({ name: name });
+        if (!name || !email || !password) {
+        setError("Please fill in all fields.");
+        return;
+        }
     }
-    navigate("/");
-  };
+
+    setError(""); // clear error if all good
+    if (isLogin) {
+        login({ name: name });
+    } else {
+        login({ name: name });
+    }
+    navigate("/learn");
+    };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
@@ -53,26 +68,31 @@ export default function Auth() {
 
         {/* Form fields */}
         <div className="w-full flex flex-col gap-3">
-          {!isLogin && (
+        {!isLogin && (
             <InputField
-              placeholder="Enter your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+            placeholder="Enter your name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             />
-          )}
-          <InputField
-            placeholder="Enter your email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <InputField
+        )}
+        <InputField
+            placeholder={isLogin ? "Enter your name" : "Enter your email"}
+            value={isLogin ? name : email}
+            onChange={(e) => isLogin ? setName(e.target.value) : setEmail(e.target.value)}
+        />
+        <InputField
             placeholder={isLogin ? "Enter your password" : "Create a password"}
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-          />
+        />
         </div>
+
+        {/* Error message */}
+        {error && (
+            <p className="text-xs text-red-500 text-center">{error}</p>
+        )}
+
 
         {/* Submit button */}
         <button
@@ -86,12 +106,12 @@ export default function Auth() {
         {/* Toggle */}
         <p className="text-sm text-gray-400">
           {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <button
-            onClick={() => setIsLogin(!isLogin)}
+            <button
+            onClick={() => { setIsLogin(!isLogin); setError(""); }}
             className="font-bold text-gray-900 hover:underline"
-          >
+            >
             {isLogin ? "Sign up" : "Login"}
-          </button>
+            </button>
         </p>
 
         {/* Bottom bar decoration */}
