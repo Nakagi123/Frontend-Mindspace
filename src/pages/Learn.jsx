@@ -72,7 +72,7 @@ const FeatureCard = ({ image, title, description, onClick, index }) => (
   >
     <div className="flex items-center gap-3 mb-3">
       <img src={image} alt={title} className="w-20 h-20 object-contain" />
-      <span className="font-semibold text-gray-900 text-base">{title}</span>
+      <span className="font-semibold text-gray-900 text-xl">{title}</span>
     </div>
     <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
   </button>

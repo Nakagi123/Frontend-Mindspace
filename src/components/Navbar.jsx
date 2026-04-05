@@ -12,7 +12,7 @@ function Navbar() {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link to="/" className="text-3xl font-bold text-gray-900">
-            mindspace.
+            mindpace.
           </Link>
 
           {/* Desktop Navigation */}
@@ -40,31 +40,31 @@ function Navbar() {
               // Logged in — show username + logout
               <>
                 <span className="text-sm text-gray-500">Hi, {user.name} 👋</span>
-                <button
+                <Link
                   onClick={logout}
                   className="px-4 py-2 text-sm font-semibold text-gray-700 border border-gray-300
                              rounded-full hover:bg-gray-100 transition-colors duration-200"
                 >
                   Logout
-                </button>
+                </Link>
               </>
             ) : (
               // Logged out — show Login + Register
               <>
-                <button
-                  onClick={() => login({ name: "Elian" })} // 👈 replace with real login later
+                <Link
+                  to="/auth" // 👈 replace with real login later
                   className="px-4 py-2 text-sm font-semibold text-gray-700
                              hover:text-gray-900 transition-colors duration-200"
                 >
                   Login
-                </button>
-                <button
-                  onClick={() => login({ name: "Elian" })} // 👈 replace with real login later
+                </Link>
+                <Link
+                  to="/auth" // 👈 replace with real login later
                   className="px-4 py-2 text-sm font-semibold text-white bg-gray-900
                              rounded-full hover:bg-gray-700 active:scale-95 transition-all duration-200"
                 >
                   Register
-                </button>
+                </Link>
               </>
             )}
           </div>
@@ -101,10 +101,10 @@ function Navbar() {
                 </button>
               ) : (
                 <>
-                  <button onClick={() => login({ name: "Elian" })} className="text-sm font-semibold text-gray-700">
+                  <button to="/auth" className="text-sm font-semibold text-gray-700">
                     Login
                   </button>
-                  <button onClick={() => login({ name: "Elian" })} className="text-sm font-semibold text-sky-500">
+                  <button to="/auth" className="text-sm font-semibold text-sky-500">
                     Register
                   </button>
                 </>
