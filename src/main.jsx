@@ -11,6 +11,8 @@ import Mood from './pages/Mood.jsx'
 import Study from './pages/Study.jsx'
 import Results from "./pages/Results.jsx"
 import Auth from "./pages/Auth.jsx";
+import Focus from "./pages/Focus.jsx";
+
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -32,6 +34,9 @@ createRoot(document.getElementById('root')).render(
               <ProtectedRoute><Results /></ProtectedRoute>
             } />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/timer" element={
+              <ProtectedRoute><Focus /></ProtectedRoute>
+            } />
           </Routes>
         </MoodProvider>
       </AuthProvider>
