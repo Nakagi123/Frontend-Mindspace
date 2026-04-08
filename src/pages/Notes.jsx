@@ -83,7 +83,7 @@ function NoteCard({ note, onEdit, onDelete }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="relative bg-gray-50 border border-gray-100 rounded-2xl p-4 shadow-sm flex flex-col justify-between min-h-[140px]">
+    <div className="relative bg-gray-50 border border-gray-100 rounded-2xl p-4 shadow-sm flex flex-col justify-between min-h-35">
       {/* Top */}
       <div className="flex justify-between items-start">
         <div>
