@@ -1,9 +1,6 @@
 import { useState } from "react";
 import Logo from "../assets/profile-pages.png";
 
-// ================================
-// Icons
-// ================================
 const IconDashboard = () => (
   <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -41,9 +38,6 @@ const IconClose = () => (
   </svg>
 );
 
-// ================================
-// Sidebar
-// ================================
 function Sidebar({ activePage, onNavigate, isOpen, onClose }) {
   const navItems = [
     { id: "home", label: "Home", icon: <IconDashboard /> },
@@ -132,9 +126,6 @@ function Sidebar({ activePage, onNavigate, isOpen, onClose }) {
   );
 }
 
-// ================================
-// Home View
-// ================================
 function HomeView() {
   return (
     <div className="flex items-center justify-center flex-1 bg-gray-200 px-4 py-8">
@@ -150,9 +141,6 @@ function HomeView() {
   );
 }
 
-// ================================
-// Profile View
-// ================================
 function ProfileView({ user, onEditClick }) {
   return (
     <div className="flex items-center justify-center flex-1 bg-gray-200 px-4 py-8">
@@ -190,9 +178,6 @@ function ProfileView({ user, onEditClick }) {
   );
 }
 
-// ================================
-// Settings View
-// ================================
 function SettingsView({ user, onSave }) {
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
@@ -254,9 +239,6 @@ function SettingsView({ user, onSave }) {
   );
 }
 
-// ================================
-// Main Profile Page
-// ================================
 export default function ProfilePage() {
   const [activePage, setActivePage] = useState("profile");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

@@ -16,9 +16,6 @@ const formatDate = (dateStr) => {
   return date.toLocaleDateString("id-ID", { day: "numeric", month: "long" });
 };
 
-// ================================
-// Modal: Add / Edit Note
-// ================================
 function NoteModal({ note, onClose, onSave }) {
   const [title, setTitle] = useState(note?.title || "");
   const [content, setContent] = useState(note?.content || "");
@@ -76,9 +73,6 @@ function NoteModal({ note, onClose, onSave }) {
   );
 }
 
-// ================================
-// Note Card
-// ================================
 function NoteCard({ note, onEdit, onDelete }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -129,9 +123,6 @@ function NoteCard({ note, onEdit, onDelete }) {
   );
 }
 
-// ================================
-// Main Notes Page
-// ================================
 export default function Notes() {
   const [notes, setNotes] = useState(DUMMY_NOTES);
   const [showModal, setShowModal] = useState(false);

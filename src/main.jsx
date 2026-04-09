@@ -16,6 +16,7 @@ import Study from './pages/Study.jsx'
 import Results from "./pages/Results.jsx"
 import Auth from "./pages/Auth.jsx";
 import Focus from "./pages/Focus.jsx";
+import Quiz from './pages/Quiz.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -43,6 +44,7 @@ createRoot(document.getElementById('root')).render(
             <Route path="/timer" element={
               <ProtectedRoute><Focus /></ProtectedRoute>
             } />
+            <Route path="/learn/quiz" element={<Quiz />} />
           </Routes>
         </MoodProvider>
       </AuthProvider>
