@@ -44,7 +44,7 @@ export default function Auth() {
     } else {
         login({ name: name });
     }
-    navigate("/learn");
+    navigate("/");
     };
 
   return (
