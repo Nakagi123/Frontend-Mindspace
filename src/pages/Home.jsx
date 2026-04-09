@@ -11,7 +11,6 @@ const HeroImage = () => (
     />
   </div>
 );
-
 function Home() {
 return (
     <div className="min-h-screen bg-white font-sans antialiased">
@@ -24,7 +23,6 @@ return (
             <div className="order-2 md:order-1 animate-fade-in">
               <HeroImage />
             </div>
- 
             {/* Text content */}
             <div className="order-1 md:order-2 flex flex-col gap-6 px-3">
               <div className="flex flex-col gap-3">

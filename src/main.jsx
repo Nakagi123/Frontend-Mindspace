@@ -1,22 +1,53 @@
+// main.jsx
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { AuthProvider } from "./context/AuthContext.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx"
+import { MoodProvider } from "./context/MoodContext"
+import ProtectedRoute from "./components/ProtectedRoute.jsx"
 import './index.css'
 import Home from './pages/Home.jsx'
 import Learn from './pages/Learn.jsx'
 import Mood from './pages/Mood.jsx'
+import Plan from './pages/Plan.jsx'  
+import Notes from './pages/Notes.jsx'
+import ProfilePage from './pages/ProfilePage.jsx'
+import Study from './pages/Study.jsx'
+import Results from "./pages/Results.jsx"
+import Auth from "./pages/Auth.jsx";
+import Focus from "./pages/Focus.jsx";
+import Quiz from './pages/Quiz.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/learn" element={<Learn />} />
-          <Route path="/learn/mood" element={<Mood />} />
-        </Routes>
+        <MoodProvider>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/learn" element={
+              <ProtectedRoute><Learn /></ProtectedRoute>
+            } />
+            <Route path="/learn/mood" element={
+              <ProtectedRoute><Mood /></ProtectedRoute>
+            } />
+            <Route path="/learn/study" element={
+              <ProtectedRoute><Study /></ProtectedRoute>
+            } />
+            <Route path="/learn/results" element={
+              <ProtectedRoute><Results /></ProtectedRoute>
+            } />
+            <Route path="/plan" element={<Plan />} />  
+            <Route path="/notes" element={<Notes />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/timer" element={
+              <ProtectedRoute><Focus /></ProtectedRoute>
+            } />
+            <Route path="/learn/quiz" element={<Quiz />} />
+          </Routes>
+        </MoodProvider>
       </AuthProvider>
     </BrowserRouter>
-  </StrictMode>,
+  </StrictMode>
 )
