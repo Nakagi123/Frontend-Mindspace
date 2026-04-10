@@ -25,6 +25,8 @@ createRoot(document.getElementById('root')).render(
         <MoodProvider>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/auth" element={<Auth />} />
+            
             <Route path="/learn" element={
               <ProtectedRoute><Learn /></ProtectedRoute>
             } />
@@ -37,14 +39,21 @@ createRoot(document.getElementById('root')).render(
             <Route path="/learn/results" element={
               <ProtectedRoute><Results /></ProtectedRoute>
             } />
-            <Route path="/plan" element={<Plan />} />  
-            <Route path="/notes" element={<Notes />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/auth" element={<Auth />} />
+            <Route path="/learn/quiz" element={
+              <ProtectedRoute><Quiz /></ProtectedRoute>
+            } />
+            <Route path="/plan" element={
+              <ProtectedRoute><Plan /></ProtectedRoute>
+            } />
+            <Route path="/notes" element={
+              <ProtectedRoute><Notes /></ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute><ProfilePage /></ProtectedRoute>
+            } />
             <Route path="/timer" element={
               <ProtectedRoute><Focus /></ProtectedRoute>
             } />
-            <Route path="/learn/quiz" element={<Quiz />} />
           </Routes>
         </MoodProvider>
       </AuthProvider>
