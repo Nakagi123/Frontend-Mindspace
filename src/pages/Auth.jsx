@@ -15,37 +15,40 @@ const InputField = ({ placeholder, type = "text", value, onChange }) => (
 );
 
 export default function Auth() {
-    const [isLogin, setIsLogin] = useState(false);
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
-    const { login } = useAuth();
-    const navigate = useNavigate();
+  const [isLogin, setIsLogin] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
+  const { login, register } = useAuth();
+  const navigate = useNavigate();
 
-    const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validation
     if (isLogin) {
-        if (!email || !password) {
-        setError("Please fill in all fields.");
-        return;
-        }
+      if (!email || !password) { setError("Please fill in all fields."); return; }
     } else {
-        if (!name || !email || !password) {
-        setError("Please fill in all fields.");
-        return;
-        }
+      if (!name || !email || !password) { setError("Please fill in all fields."); return; }
     }
 
-    setError(""); // clear error if all good
-    if (isLogin) {
-        login({ name: name });
-    } else {
-        login({ name: name });
-    }
-    navigate("/");
-    };
+    setError("");
+    setLoading(true);
+
+try {
+  if (isLogin) {
+    await login(email, password);
+  } else {
+    await register(name, email, password);
+  }
+  console.log("navigating to /"); // tambah ini
+  navigate("/");
+} catch (err) {
+  console.log("error:", err); // tambah ini
+  setError(err.message || "Something went wrong.");
+}
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
@@ -91,33 +94,33 @@ export default function Auth() {
 
         {/* Error message */}
         {error && (
-            <p className="text-xs text-red-500 text-center">{error}</p>
+          <p className="text-xs text-red-500 text-center">{error}</p>
         )}
-
 
         {/* Submit button */}
         <button
           onClick={handleSubmit}
+          disabled={loading}
           className="w-full bg-gray-900 text-white text-sm font-semibold py-3 rounded-xl
-                     hover:bg-gray-700 active:scale-95 transition-all duration-200"
+                     hover:bg-gray-700 active:scale-95 transition-all duration-200
+                     disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
         >
-          {isLogin ? "Login" : "Register"}
+          {loading ? "Please wait..." : isLogin ? "Login" : "Register"}
         </button>
 
         {/* Toggle */}
         <p className="text-sm text-gray-400">
           {isLogin ? "Don't have an account? " : "Already have an account? "}
-            <button
+          <button
             onClick={() => { setIsLogin(!isLogin); setError(""); }}
             className="font-bold text-gray-900 hover:underline"
-            >
+          >
             {isLogin ? "Sign up" : "Login"}
-            </button>
+          </button>
         </p>
 
         {/* Bottom bar decoration */}
         <div className="w-12 h-1 bg-gray-200 rounded-full mt-2" />
-
       </div>
     </div>
   );
