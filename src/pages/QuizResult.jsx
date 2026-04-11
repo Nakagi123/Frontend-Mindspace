@@ -1,6 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 
+const getCorrectIndex = (correctAnswer) => {
+  const map = { "A": 0, "B": 1, "C": 2, "D": 3 };
+  return map[correctAnswer?.toUpperCase()] ?? -1;
+};
+
 function CircleProgress({ score, total }) {
   const percent = Math.round((score / total) * 100);
   const radius = 54;
@@ -160,7 +165,8 @@ export default function QuizResult({ score, total, questions, userAnswers }) {
           <div className="flex flex-col gap-3">
             {questions.map((q, i) => {
               const userIdx = userAnswers[i];
-              const correct = userIdx === q.correctIndex;
+              const correctIdx = getCorrectIndex(q.correctAnswer); 
+              const correct = userIdx === correctIdx;              
               return (
                 <div key={i} className="bg-gray-50 rounded-xl px-4 py-3">
                   <p className="text-sm font-semibold text-gray-800 mb-1">
@@ -172,7 +178,7 @@ export default function QuizResult({ score, total, questions, userAnswers }) {
                     </p>
                   )}
                   <p className="text-sm text-green-600">
-                    ✓ Correct answer: {q.options[q.correctIndex]}
+                    ✓ Correct answer: {q.options[correctIdx]} 
                   </p>
                 </div>
               );

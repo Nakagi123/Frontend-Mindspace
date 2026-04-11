@@ -5,6 +5,11 @@ import { useMood } from "../context/MoodContext";
 import { quizApi } from "../lib/api";
 import QuizResult from "./QuizResult";
 
+const getCorrectIndex = (correctAnswer) => {
+  const map = { "A": 0, "B": 1, "C": 2, "D": 3 };
+  return map[correctAnswer?.toUpperCase()] ?? -1;
+};
+
 export default function Quiz() {
   const navigate = useNavigate();
   const { summary } = useMood();
@@ -26,6 +31,8 @@ export default function Quiz() {
         setLoading(false);
         return;
       }
+
+
 
       try {
         setLoading(true);
@@ -69,15 +76,18 @@ export default function Quiz() {
     if (answered) return;
     setSelectedIndex(idx);
     setAnswered(true);
-    if (idx === current.correctIndex) {
-      setScore((s) => s + 1);
-    }
   };
 
   const handleNext = () => {
-    setUserAnswers((prev) => [...prev, selectedIndex]);
+    const newAnswers = [...userAnswers, selectedIndex];
+    setUserAnswers(newAnswers);
 
     if (currentIndex + 1 >= total) {
+      // Calculate score directly from answers
+      const finalScore = newAnswers.reduce((acc, answerIdx, i) => {
+        return acc + (answerIdx === getCorrectIndex(questions[i].correctAnswer) ? 1 : 0);
+      }, 0);
+      setScore(finalScore); // 👈 set accurate score
       setFinished(true);
     } else {
       setCurrentIndex((i) => i + 1);
@@ -90,10 +100,10 @@ export default function Quiz() {
     if (!answered) {
       return "bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 cursor-pointer";
     }
-    if (idx === current.correctIndex) {
+    if (idx === getCorrectIndex(current.correctAnswer)) {
       return "bg-green-100 border border-green-200 text-green-800";
     }
-    if (idx === selectedIndex && idx !== current.correctIndex) {
+    if (idx === selectedIndex && idx !== getCorrectIndex(current.correctAnswer)) {
       return "bg-red-100 border border-red-200 text-red-800";
     }
     return "bg-white border border-gray-200 text-gray-400";
@@ -195,22 +205,20 @@ export default function Quiz() {
 
         {/* Feedback */}
         {answered && (
-          <div
-            className={`px-5 py-3.5 rounded-xl text-sm mb-5 ${
-              selectedIndex === current.correctIndex 
-                ? "bg-green-100 text-green-800" 
-                : "bg-red-100 text-red-800"
-            }`}
-          >
-            {selectedIndex === current.correctIndex ? (
+          <div className={`px-5 py-3.5 rounded-xl text-sm mb-5 ${
+            selectedIndex === getCorrectIndex(current.correctAnswer)
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          }`}>
+            {selectedIndex === getCorrectIndex(current.correctAnswer) ? (
               <>
                 <span className="font-bold">Correct!</span> The answer is{" "}
-                <span className="font-bold">{current.options[current.correctIndex]}</span>
+                <span className="font-bold">{current.options[getCorrectIndex(current.correctAnswer)]}</span>
               </>
             ) : (
               <>
                 <span className="font-bold">X That is not correct.</span> The correct answer is{" "}
-                <span className="font-bold">{current.options[current.correctIndex]}</span>.
+                <span className="font-bold">{current.options[getCorrectIndex(current.correctAnswer)]}</span>.
               </>
             )}
           </div>

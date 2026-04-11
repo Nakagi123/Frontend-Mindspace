@@ -246,7 +246,7 @@ export default function Focus() {
                 className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors"
               >
                 ⏩ Skip
-              </button>
+              </button>          
             </div>
           </div>
 
