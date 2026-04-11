@@ -45,11 +45,14 @@ export default function Focus() {
   const [session, setSession] = useState(0);
   const [isBreak, setIsBreak] = useState(false);
   const [streak, setStreak] = useState(0);
+  const [longestStreak, setLongestStreak] = useState(0);
+  const [freezeCount, setFreezeCount] = useState(0);
   const [updatingStreak, setUpdatingStreak] = useState(false);
-  const [sessionCompleted, setSessionCompleted] = useState(false); // Track if already updated streak
+  const [sessionCompleted, setSessionCompleted] = useState(false);
+  const [alreadyUpdatedToday, setAlreadyUpdatedToday] = useState(false);
 
   const totalTime = isBreak
-    ? session === 3 ? LONG_BREAK_TIME : BREAK_TIME  // session 0,1,2 = short break, session 3 = long break
+    ? session === 3 ? LONG_BREAK_TIME : BREAK_TIME
     : WORK_TIME;
 
   // Fetch streak on mount
@@ -61,6 +64,8 @@ export default function Focus() {
     try {
       const data = await streakApi.get();
       setStreak(data.streak || 0);
+      setLongestStreak(data.longest_streak || 0);
+      setFreezeCount(data.freeze_count || 0);
     } catch (error) {
       console.error("Failed to fetch streak:", error);
     }
@@ -72,7 +77,14 @@ export default function Focus() {
     try {
       const data = await streakApi.update();
       setStreak(data.streak);
-      console.log("Streak updated:", data.message);
+      setLongestStreak(data.longest_streak);
+      setFreezeCount(data.freeze_count);
+      
+      if (data.message && data.message.includes("Already updated today")) {
+        setAlreadyUpdatedToday(true);
+      }
+      
+      console.log(data.message);
     } catch (error) {
       console.error("Failed to update streak:", error);
     } finally {
@@ -91,7 +103,7 @@ export default function Focus() {
           setRunning(false);
           
           // Jika selesai work session (bukan break) dan belum update streak
-          if (!isBreak && !sessionCompleted) {
+          if (!isBreak && !sessionCompleted && !alreadyUpdatedToday) {
             updateStreak();
             setSessionCompleted(true);
           }
@@ -108,7 +120,7 @@ export default function Focus() {
     }, 1000);
     
     return () => clearInterval(interval);
-  }, [running, isBreak, sessionCompleted]);
+  }, [running, isBreak, sessionCompleted, alreadyUpdatedToday]);
 
   const handleAutoNext = () => {
     if (isBreak) {
@@ -120,7 +132,6 @@ export default function Focus() {
       // Work selesai, ke break
       const nextSession = session + 1;
       if (nextSession >= 4) {
-        // Setelah 4 session, reset ke 0 dan long break
         setSession(0);
         setSeconds(LONG_BREAK_TIME);
       } else {
@@ -160,7 +171,6 @@ export default function Focus() {
     }
   };
 
-  // Format session number for display (1-4)
   const currentSessionNumber = isBreak ? session + 1 : session + 1;
 
   return (
@@ -175,15 +185,28 @@ export default function Focus() {
             <p className="text-sm text-gray-400 mt-1">Keep track of your tasks and deadlines.</p>
           </div>
 
-          {/* Streak card */}
-          <div className="bg-orange-50 border border-orange-200 rounded-2xl px-6 py-5 flex items-center justify-between">
-            <div className="flex flex-col gap-1">
+          {/* Streak card - with complete info */}
+          <div className="bg-orange-50 border border-orange-200 rounded-2xl px-6 py-5">
+            <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-semibold text-orange-400">Daily streak</span>
-              <span className="text-4xl font-bold text-orange-500">{streak}</span>
-              <span className="text-xs text-orange-300">days in a row</span>
-              <span className="text-xs text-gray-500 mt-2">Complete a focus session to increase your streak!</span>
+              <span className="text-5xl">🔥</span>
             </div>
-            <span className="text-5xl">🔥</span>
+            
+            <div className="flex items-baseline gap-2 mb-2">
+              <span className="text-4xl font-bold text-orange-500">{streak}</span>
+              <span className="text-sm text-orange-400">days in a row</span>
+            </div>
+            
+            <div className="flex gap-4 text-xs text-gray-500">
+              <span>🏆 Best: {longestStreak}</span>
+              <span>❄️ Freeze: {freezeCount}</span>
+            </div>
+            
+            <p className="text-xs text-gray-500 mt-3">
+              {alreadyUpdatedToday 
+                ? "✅ Already updated today! Come back tomorrow." 
+                : "Complete a focus session to increase your streak!"}
+            </p>
           </div>
 
           {/* Timer card */}
