@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import Logo from "../assets/profile-pages.png";
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,8 +12,8 @@ function Navbar() {
       <div className="container mx-auto px-4 py-3">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <Link to="/" className="text-3xl font-bold text-gray-900">
-            mindpace.
+          <Link to="/">
+            <img src={Logo} alt="Mindpace" className="h-10 w-auto object-contain" />
           </Link>
 
           {/* Desktop Navigation */}
