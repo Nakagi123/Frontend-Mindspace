@@ -27,7 +27,7 @@ export default function Auth() {
     const handleSubmit = () => {
     // Validation
     if (isLogin) {
-        if (!name || !password) {
+        if (!email || !password) {
         setError("Please fill in all fields.");
         return;
         }
@@ -68,24 +68,25 @@ export default function Auth() {
 
         {/* Form fields */}
         <div className="w-full flex flex-col gap-3">
-        {!isLogin && (
+          {!isLogin && (
             <InputField
-            placeholder="Enter your name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
-        )}
-        <InputField
-            placeholder={isLogin ? "Enter your name" : "Enter your email"}
-            value={isLogin ? name : email}
-            onChange={(e) => isLogin ? setName(e.target.value) : setEmail(e.target.value)}
-        />
-        <InputField
+          )}
+          <InputField
+            placeholder="Enter your email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <InputField
             placeholder={isLogin ? "Enter your password" : "Create a password"}
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-        />
+          />
         </div>
 
         {/* Error message */}

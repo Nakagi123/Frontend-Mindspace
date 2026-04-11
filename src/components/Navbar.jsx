@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, login, logout } = useAuth();
+  const { user, logout } = useAuth();
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
@@ -39,14 +39,21 @@ function Navbar() {
             {user ? (
               // Logged in — show username + logout
               <>
-                <span className="text-sm text-gray-500">Hi, {user.name} 👋</span>
+
+
                 <Link
+                  to="/profile"
+                  className="text-sm text-gray-500 hover:text-gray-900 transition-colors duration-200"
+                >
+                  Hi, {user.name} 👋
+                </Link>
+                <button
                   onClick={logout}
                   className="px-4 py-2 text-sm font-semibold text-gray-700 border border-gray-300
-                             rounded-full hover:bg-gray-100 transition-colors duration-200"
+                            rounded-full hover:bg-gray-100 transition-colors duration-200"
                 >
                   Logout
-                </Link>
+                </button>
               </>
             ) : (
               // Logged out — show Login + Register
@@ -101,12 +108,12 @@ function Navbar() {
                 </button>
               ) : (
                 <>
-                  <button to="/auth" className="text-sm font-semibold text-gray-700">
+                  <Link to="/auth" className="text-sm font-semibold text-gray-700">
                     Login
-                  </button>
-                  <button to="/auth" className="text-sm font-semibold text-sky-500">
+                  </Link>
+                  <Link to="/auth" className="text-sm font-semibold text-sky-500">
                     Register
-                  </button>
+                  </Link>
                 </>
               )}
             </div>
