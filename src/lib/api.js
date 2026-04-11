@@ -17,7 +17,6 @@ const req = async (method, path, body) => {
   
   const data = await res.json();
   
-  // Better error handling
   if (!res.ok) {
     throw new Error(data.message || `Request failed with status ${res.status}`);
   }
@@ -62,7 +61,7 @@ export const authApi = {
 export const notesApi = {
   getAll: () => req("GET", "/api/notes"),
   getOne: (id) => req("GET", `/api/notes/${id}`),
-  create: (content) => req("POST", "/api/notes", { content }),  // ✅ Hanya content
+  create: (content) => req("POST", "/api/notes", { content }), 
   update: (id, content) => req("PUT", `/api/notes/${id}`, { content }),
   delete: (id) => req("DELETE", `/api/notes/${id}`),
 };

@@ -36,19 +36,19 @@ export default function Auth() {
     setError("");
     setLoading(true);
 
-try {
-  if (isLogin) {
-    await login(email, password);
-  } else {
-    await register(name, email, password);
-  }
-  console.log("navigating to /"); // tambah ini
-  navigate("/");
-} catch (err) {
-  console.log("error:", err); // tambah ini
-  setError(err.message || "Something went wrong.");
-}
-  };
+    try {
+      if (isLogin) {
+        await login(email, password);
+      } else {
+        await register(name, email, password);
+      }
+      console.log("navigating to /");
+      navigate("/");
+    } catch (err) {
+      console.log("error:", err);
+      setError(err.message || "Something went wrong.");
+    }
+      };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">

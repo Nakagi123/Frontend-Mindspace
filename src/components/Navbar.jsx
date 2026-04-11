@@ -38,7 +38,6 @@ function Navbar() {
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
             {user ? (
-              // Logged in — show username + logout
               <>
 
 
@@ -57,17 +56,16 @@ function Navbar() {
                 </button>
               </>
             ) : (
-              // Logged out — show Login + Register
               <>
                 <Link
-                  to="/auth" // 👈 replace with real login later
+                  to="/auth" 
                   className="px-4 py-2 text-sm font-semibold text-gray-700
                              hover:text-gray-900 transition-colors duration-200"
                 >
                   Login
                 </Link>
                 <Link
-                  to="/auth" // 👈 replace with real login later
+                  to="/auth" 
                   className="px-4 py-2 text-sm font-semibold text-white bg-gray-900
                              rounded-full hover:bg-gray-700 active:scale-95 transition-all duration-200"
                 >

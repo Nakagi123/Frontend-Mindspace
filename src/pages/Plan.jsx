@@ -46,8 +46,6 @@ const toDateInput = (isoStr) => {
   return isoStr.split("T")[0];
 };
 
-// ─── Task Card ───────────────────────────────────────────────────────────────
-
 function TaskCard({ task, onDelete, onFinish, onEdit }) {
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing]   = useState(false);
@@ -191,7 +189,6 @@ function TaskCard({ task, onDelete, onFinish, onEdit }) {
   );
 }
 
-// ─── Main Page ───────────────────────────────────────────────────────────────
 
 export default function Plan() {
   const [goal,         setGoal]         = useState("");
@@ -230,14 +227,12 @@ export default function Plan() {
     }
   };
 
-  // Update state lokal langsung — tidak bergantung pada response body backend
   const handleFinish = async (id, currentStatus) => {
     const newStatus = currentStatus === "finish" ? "on going" : "finish";
     setTasks((prev) => prev.map((t) => t._id === id ? { ...t, status: newStatus } : t));
     try {
       await plansApi.update(id, { status: newStatus });
     } catch (err) {
-      // Revert kalau API gagal
       setTasks((prev) => prev.map((t) => t._id === id ? { ...t, status: currentStatus } : t));
       setError(err.message);
     }

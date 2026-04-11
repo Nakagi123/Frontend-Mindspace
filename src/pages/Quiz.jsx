@@ -23,7 +23,6 @@ export default function Quiz() {
   const [userAnswers, setUserAnswers] = useState([]);
   const [finished, setFinished] = useState(false);
 
-  // Generate quiz dari summary
   useEffect(() => {
     const generateQuiz = async () => {
       if (!summary) {
@@ -36,15 +35,12 @@ export default function Quiz() {
 
       try {
         setLoading(true);
-        
-        // ✅ Format yang benar: materialContent
         const response = await quizApi.generate({
           materialContent: summary.summary || summary.content || summary.text
         });
         
         console.log("Quiz response:", response);
-        
-        // Extract questions dari response (sesuaikan dengan struktur response)
+
         let quizQuestions = [];
         if (response.quiz && response.quiz.questions) {
           quizQuestions = response.quiz.questions;
@@ -53,7 +49,6 @@ export default function Quiz() {
         } else if (response.data && response.data.questions) {
           quizQuestions = response.data.questions;
         } else {
-          // Fallback jika format berbeda
           quizQuestions = response.quiz || [];
         }
         
@@ -83,11 +78,10 @@ export default function Quiz() {
     setUserAnswers(newAnswers);
 
     if (currentIndex + 1 >= total) {
-      // Calculate score directly from answers
       const finalScore = newAnswers.reduce((acc, answerIdx, i) => {
         return acc + (answerIdx === getCorrectIndex(questions[i].correctAnswer) ? 1 : 0);
       }, 0);
-      setScore(finalScore); // 👈 set accurate score
+      setScore(finalScore); 
       setFinished(true);
     } else {
       setCurrentIndex((i) => i + 1);
@@ -109,7 +103,6 @@ export default function Quiz() {
     return "bg-white border border-gray-200 text-gray-400";
   };
 
-  // Loading state
   if (loading) {
     return (
       <>
@@ -124,7 +117,6 @@ export default function Quiz() {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <>
@@ -144,7 +136,6 @@ export default function Quiz() {
     );
   }
 
-  // No questions
   if (questions.length === 0) {
     return (
       <>

@@ -2,9 +2,6 @@ import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import { notesApi } from "../lib/api";
 
-// ================================
-// Helpers
-// ================================
 const formatDate = (isoStr) => {
   if (!isoStr) return "";
   return new Date(isoStr).toLocaleDateString("id-ID", {
@@ -41,9 +38,6 @@ function SimpleMarkdown({ text }) {
   );
 }
 
-// ================================
-// Delete Confirm Modal
-// ================================
 function DeleteConfirmModal({ onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 bg-black/30 z-[60] flex items-center justify-center px-4">
@@ -63,9 +57,6 @@ function DeleteConfirmModal({ onConfirm, onCancel }) {
   );
 }
 
-// ================================
-// Add Note Modal
-// ================================
 function AddNoteModal({ onClose, onSave, loading }) {
   const [content, setContent] = useState("");
 
@@ -106,9 +97,6 @@ function AddNoteModal({ onClose, onSave, loading }) {
   );
 }
 
-// ================================
-// Note Drawer
-// ================================
 function NoteDrawer({ note, onClose, onSave, onDelete }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(note.content);
@@ -223,9 +211,6 @@ function NoteDrawer({ note, onClose, onSave, onDelete }) {
   );
 }
 
-// ================================
-// Note Card
-// ================================
 function NoteCard({ note, onClick, onDelete }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const preview = stripMarkdown(note.content);

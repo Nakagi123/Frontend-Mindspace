@@ -5,9 +5,8 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // cek token saat pertama load
+  const [loading, setLoading] = useState(true); 
 
-  // Saat app pertama dibuka — restore user dari localStorage
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
     const token = localStorage.getItem("token");
@@ -17,24 +16,21 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  // Login — hit API, simpan token + user
  const login = async (email, password) => {
   const data = await authApi.login(email, password);
   localStorage.setItem("token", data.token);
   localStorage.setItem("user", JSON.stringify(data.user));
   setUser(data.user);
-  console.log("login done, user set:", data.user); // tambah ini
+  console.log("login done, user set:", data.user);
   return data;
 };
 
-  // Register — hit API, langsung login otomatis
+
   const register = async (name, email, password) => {
     await authApi.register(name, email, password);
-    // Setelah register, langsung login
     return login(email, password);
   };
 
-  // Logout — bersihkan semua
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");

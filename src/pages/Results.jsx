@@ -28,7 +28,6 @@ export default function Results() {
 
   const keyPoints = content.split(". ").filter(Boolean);
 
-  // 👇 Your teammate will replace this with actual extracted keywords
   const keywords = ["userflow", "explanation", "landing page", "website", "Lorem"];
 
   const relaxSummary = [
@@ -40,12 +39,10 @@ export default function Results() {
   const saveToNotes = async () => {
     setSaving(true);
     try {
-      // Format konten untuk disimpan (title akan diambil dari baris pertama oleh backend)
       const noteContent = `${title}\n\nSummary:\n${content}\n\nKeywords:\n${keywords.join(", ")}`;
-      
+
       console.log("Saving to notes:", noteContent);
       
-      // ✅ Kirim hanya content
       const result = await notesApi.create(noteContent);
       
       console.log("Save result:", result);

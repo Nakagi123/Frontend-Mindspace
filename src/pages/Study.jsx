@@ -46,12 +46,11 @@ export default function FocusedStudy() {
       savePace(pace);
       saveDifficulty(difficulty);
 
-      // ✅ FIXED: Call with 4 separate parameters, NOT an object
       const res = await summarizeApi.summarize(
-        material,                                          // text
-        selectedMood,                                      // mood  
-        pace.toLowerCase(),                                // pace
-        DIFFICULTY_LABELS[difficulty].toLowerCase()        // difficulty
+        material,       
+        selectedMood,
+        pace.toLowerCase(),
+        DIFFICULTY_LABELS[difficulty].toLowerCase()
       );
 
       setSummary(res);

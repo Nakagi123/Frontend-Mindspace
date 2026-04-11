@@ -55,7 +55,6 @@ export default function Focus() {
     ? session === 3 ? LONG_BREAK_TIME : BREAK_TIME
     : WORK_TIME;
 
-  // Fetch streak on mount
   useEffect(() => {
     fetchStreak();
   }, []);
@@ -98,17 +97,14 @@ export default function Focus() {
     const interval = setInterval(() => {
       setSeconds(prev => {
         if (prev <= 1) {
-          // Timer selesai!
           clearInterval(interval);
           setRunning(false);
           
-          // Jika selesai work session (bukan break) dan belum update streak
           if (!isBreak && !sessionCompleted && !alreadyUpdatedToday) {
             updateStreak();
             setSessionCompleted(true);
           }
           
-          // Auto skip to next mode after 2 seconds
           setTimeout(() => {
             handleAutoNext();
           }, 2000);
@@ -124,12 +120,10 @@ export default function Focus() {
 
   const handleAutoNext = () => {
     if (isBreak) {
-      // Break selesai, kembali ke work
       setIsBreak(false);
       setSeconds(WORK_TIME);
       setRunning(false);
     } else {
-      // Work selesai, ke break
       const nextSession = session + 1;
       if (nextSession >= 4) {
         setSession(0);
