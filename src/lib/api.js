@@ -14,8 +14,18 @@ const req = async (method, path, body) => {
     headers: authHeader(),
     body: body ? JSON.stringify(body) : undefined,
   });
+  
   const data = await res.json();
-  if (!data.success) throw new Error(data.message || "Request failed");
+  
+  // Better error handling
+  if (!res.ok) {
+    throw new Error(data.message || `Request failed with status ${res.status}`);
+  }
+  
+  if (data.success === false) {
+    throw new Error(data.message || "Request failed");
+  }
+  
   return data;
 };
 
@@ -42,7 +52,7 @@ export const authApi = {
     }).then(async (res) => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Login failed");
-      return data; // { message, token, user }
+      return data;
     }),
 };
 
@@ -50,36 +60,37 @@ export const authApi = {
 // Notes
 // ================================
 export const notesApi = {
-  getAll: ()              => req("GET",    "/api/notes"),
-  getOne: (id)            => req("GET",    `/api/notes/${id}`),
-  create: (content)       => req("POST",   "/api/notes", { content }),
-  update: (id, content)   => req("PUT",    `/api/notes/${id}`, { content }),
-  delete: (id)            => req("DELETE", `/api/notes/${id}`),
+  getAll: () => req("GET", "/api/notes"),
+  getOne: (id) => req("GET", `/api/notes/${id}`),
+  create: (content) => req("POST", "/api/notes", { content }),  // ✅ Hanya content
+  update: (id, content) => req("PUT", `/api/notes/${id}`, { content }),
+  delete: (id) => req("DELETE", `/api/notes/${id}`),
 };
 
 // ================================
 // Plans
 // ================================
 export const plansApi = {
-  getAll: ()          => req("GET",    "/api/plan"),
-  create: (body)      => req("POST",   "/api/plan", body),
-  update: (id, body)  => req("PUT",    `/api/plan/${id}`, body),
-  delete: (id)        => req("DELETE", `/api/plan/${id}`),
+  getAll: () => req("GET", "/api/plan"),  
+  create: (body) => req("POST", "/api/plan", body),
+  update: (id, body) => req("PUT", `/api/plan/${id}`, body),
+  delete: (id) => req("DELETE", `/api/plan/${id}`),
 };
 
 // ================================
 // Streak
 // ================================
 export const streakApi = {
-  get:    ()     => req("GET",  "/api/streak"),
-  update: ()     => req("POST", "/api/streak/update"),
+  get: () => req("GET", "/api/streak"),
+  update: () => req("POST", "/api/streak/update"),
 };
 
 // ================================
 // Summarize
 // ================================
 export const summarizeApi = {
-  summarize: (text) => req("POST", "/api/summarize", { text }),
+  summarize: (text, mood, pace, difficulty) => 
+    req("POST", "/api/summarize", { text, mood, pace, difficulty }),
 };
 
 // ================================

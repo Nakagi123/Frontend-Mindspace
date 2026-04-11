@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { streakApi } from "../lib/api";
 import Navbar from "../components/Navbar";
 
 const WORK_TIME = 25 * 60;
@@ -43,35 +44,106 @@ export default function Focus() {
   const [running, setRunning] = useState(false);
   const [session, setSession] = useState(0);
   const [isBreak, setIsBreak] = useState(false);
+  const [streak, setStreak] = useState(0);
+  const [updatingStreak, setUpdatingStreak] = useState(false);
+  const [sessionCompleted, setSessionCompleted] = useState(false); // Track if already updated streak
 
   const totalTime = isBreak
-    ? session === 0 ? LONG_BREAK_TIME : BREAK_TIME
+    ? session === 3 ? LONG_BREAK_TIME : BREAK_TIME  // session 0,1,2 = short break, session 3 = long break
     : WORK_TIME;
+
+  // Fetch streak on mount
+  useEffect(() => {
+    fetchStreak();
+  }, []);
+
+  const fetchStreak = async () => {
+    try {
+      const data = await streakApi.get();
+      setStreak(data.streak || 0);
+    } catch (error) {
+      console.error("Failed to fetch streak:", error);
+    }
+  };
+
+  const updateStreak = async () => {
+    if (updatingStreak) return;
+    setUpdatingStreak(true);
+    try {
+      const data = await streakApi.update();
+      setStreak(data.streak);
+      console.log("Streak updated:", data.message);
+    } catch (error) {
+      console.error("Failed to update streak:", error);
+    } finally {
+      setUpdatingStreak(false);
+    }
+  };
 
   useEffect(() => {
     if (!running) return;
+    
     const interval = setInterval(() => {
       setSeconds(prev => {
-        if (prev <= 0) {
+        if (prev <= 1) {
+          // Timer selesai!
           clearInterval(interval);
           setRunning(false);
+          
+          // Jika selesai work session (bukan break) dan belum update streak
+          if (!isBreak && !sessionCompleted) {
+            updateStreak();
+            setSessionCompleted(true);
+          }
+          
+          // Auto skip to next mode after 2 seconds
+          setTimeout(() => {
+            handleAutoNext();
+          }, 2000);
+          
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
+    
     return () => clearInterval(interval);
-  }, [running]);
+  }, [running, isBreak, sessionCompleted]);
+
+  const handleAutoNext = () => {
+    if (isBreak) {
+      // Break selesai, kembali ke work
+      setIsBreak(false);
+      setSeconds(WORK_TIME);
+      setRunning(false);
+    } else {
+      // Work selesai, ke break
+      const nextSession = session + 1;
+      if (nextSession >= 4) {
+        // Setelah 4 session, reset ke 0 dan long break
+        setSession(0);
+        setSeconds(LONG_BREAK_TIME);
+      } else {
+        setSession(nextSession);
+        setSeconds(BREAK_TIME);
+      }
+      setIsBreak(true);
+      setRunning(false);
+    }
+  };
 
   const handleReset = () => {
     setRunning(false);
     setSeconds(WORK_TIME);
     setSession(0);
     setIsBreak(false);
+    setSessionCompleted(false);
   };
 
   const handleSkip = () => {
     setRunning(false);
+    setSessionCompleted(false);
+    
     if (isBreak) {
       setIsBreak(false);
       setSeconds(WORK_TIME);
@@ -87,6 +159,9 @@ export default function Focus() {
       setIsBreak(true);
     }
   };
+
+  // Format session number for display (1-4)
+  const currentSessionNumber = isBreak ? session + 1 : session + 1;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -104,9 +179,9 @@ export default function Focus() {
           <div className="bg-orange-50 border border-orange-200 rounded-2xl px-6 py-5 flex items-center justify-between">
             <div className="flex flex-col gap-1">
               <span className="text-xs font-semibold text-orange-400">Daily streak</span>
-              <span className="text-4xl font-bold text-orange-500">{user?.streak ?? 0}</span>
+              <span className="text-4xl font-bold text-orange-500">{streak}</span>
               <span className="text-xs text-orange-300">days in a row</span>
-              <span className="text-xs text-gray-500 mt-2">Small steps every day add up.</span>
+              <span className="text-xs text-gray-500 mt-2">Complete a focus session to increase your streak!</span>
             </div>
             <span className="text-5xl">🔥</span>
           </div>
@@ -114,7 +189,7 @@ export default function Focus() {
           {/* Timer card */}
           <div className="bg-white border border-gray-100 rounded-2xl px-6 py-8 flex flex-col items-center gap-6 shadow-sm">
             <p className="text-sm text-gray-400">
-              {isBreak ? "Break time! 😮‍💨" : "Today's Session"}
+              {isBreak ? "Break time! 😮‍💨" : `Session ${currentSessionNumber} of 4`}
             </p>
 
             {/* Session dots */}
@@ -122,7 +197,7 @@ export default function Focus() {
               {[0, 1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className={`w-2 h-2 rounded-full ${i <= session ? "bg-gray-900" : "bg-gray-200"}`}
+                  className={`w-2 h-2 rounded-full ${i < session ? "bg-gray-900" : i === session && !isBreak ? "bg-gray-900" : "bg-gray-200"}`}
                 />
               ))}
             </div>
@@ -133,7 +208,7 @@ export default function Focus() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setRunning(!running)}
-                className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-full"
+                className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-full hover:bg-gray-700 transition"
               >
                 {running ? "⏸ PAUSE" : "▶ START"}
               </button>
@@ -147,7 +222,7 @@ export default function Focus() {
                 onClick={handleSkip}
                 className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors"
               >
-                ▶ Skip
+                ⏩ Skip
               </button>
             </div>
           </div>

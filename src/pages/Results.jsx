@@ -1,31 +1,63 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMood } from "../context/MoodContext";
 import Navbar from "../components/Navbar";
+import { notesApi } from "../lib/api";
 
 const DIFFICULTY_LABELS = ["Easy", "Medium", "Hard"];
 
 export default function Results() {
   const navigate = useNavigate();
-  const { pace, difficulty, summary, selectedMood } = useMood();
+  const { pace, difficulty, summary } = useMood();
   const [relaxMode, setRelaxMode] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  // 👇 Your teammate will replace this with the actual AI output
-  const keyPoints = [
-    "The user flow explains how a user interacts with the website, starting from the landing page.",
-    "Users can choose to log in or continue, usually shown as a simple decision step (like a flowchart).",
-    "The process is structured step-by-step to make navigation clear and easy to follow.",
-  ];
+  useEffect(() => {
+    if (!summary) {
+      navigate("/learn");
+    }
+  }, [summary, navigate]);
+
+  if (!summary) return null;
+
+  const {
+    title,
+    summary: content,
+    metadata,
+  } = summary;
+
+  const keyPoints = content.split(". ").filter(Boolean);
 
   // 👇 Your teammate will replace this with actual extracted keywords
   const keywords = ["userflow", "explanation", "landing page", "website", "Lorem"];
 
-  // 👇 Your teammate will replace these with actual simplified AI output
   const relaxSummary = [
-    "Topic: user flow",
-    "Keywords: user flow, explanation, navigation",
-    "Key idea: user flow describes how users interact with a website step by step",
+    `Title: ${title}`,
+    `Mood: ${metadata.mood}`,
+    `Key idea: ${content.slice(0, 120)}...`,
   ];
+
+  const saveToNotes = async () => {
+    setSaving(true);
+    try {
+      // Format konten untuk disimpan (title akan diambil dari baris pertama oleh backend)
+      const noteContent = `${title}\n\nSummary:\n${content}\n\nKeywords:\n${keywords.join(", ")}`;
+      
+      console.log("Saving to notes:", noteContent);
+      
+      // ✅ Kirim hanya content
+      const result = await notesApi.create(noteContent);
+      
+      console.log("Save result:", result);
+      alert("✅ Summary saved to notes!");
+      navigate("/notes");
+    } catch (error) {
+      console.error("Failed to save:", error);
+      alert(`Failed to save: ${error.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -148,15 +180,16 @@ export default function Results() {
               Generate Quiz →
             </button>
             <button
-              onClick={() => navigate("/notes")}
+              onClick={saveToNotes}
+              disabled={saving}
               className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-600
-                         hover:text-gray-900 transition-colors duration-200"
+                         hover:text-gray-900 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                 <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke="currentColor" strokeWidth="1.5"/>
               </svg>
-              Save to Notes
+              {saving ? "Saving..." : "Save to Notes"}
             </button>
           </div>
 

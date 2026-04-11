@@ -1,40 +1,6 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
-
-// ================================
-// Dummy data — shape matches real backend
-// ================================
-const DUMMY_NOTES = [
-  {
-    _id: "69d7b60ed7f999942da50117",
-    user_id: "69d64a15770219eb0bff2d27",
-    material_id: "65f1a2b3c4d5e6f7a8b9c0d1",
-    content:
-      "🤖 AI Summary:\n\nHere's a concise summary of the provided text:\n\n**Blockchain is a decentralized digital ledger that securely and transparently records transactions across a network. Its key features of immutability and consensus make it valuable beyond cryptocurrencies, finding applications in supply chain, healthcare, and finance.**",
-    is_ai_generated: true,
-    createdAt: "2026-04-09T14:22:06.990Z",
-    updatedAt: "2026-04-09T14:22:06.990Z",
-  },
-  {
-    _id: "69d7b31a85df609713340bf8",
-    user_id: "69d64a15770219eb0bff2d27",
-    material_id: "65f1a2b3c4d5e6f7a8b9c0d1",
-    content:
-      "AI Summary:\n\nAI is transforming education by **personalizing learning experiences**. It achieves this by **analyzing student behavior** and adapting content delivery in real time.",
-    is_ai_generated: true,
-    createdAt: "2026-04-09T14:09:30.123Z",
-    updatedAt: "2026-04-09T14:09:30.123Z",
-  },
-  {
-    _id: "69d76b57b636d2bf46d90c0a",
-    user_id: "69d64a15770219eb0bff2d27",
-    material_id: null,
-    content: "Isi catatan kamu di sini",
-    is_ai_generated: false,
-    createdAt: "2026-04-09T09:03:19.475Z",
-    updatedAt: "2026-04-09T09:03:19.475Z",
-  },
-];
+import { notesApi } from "../lib/api";
 
 // ================================
 // Helpers
@@ -48,21 +14,18 @@ const formatDate = (isoStr) => {
   });
 };
 
-// Strip markdown bold (**text**) for card preview
 const stripMarkdown = (text) =>
   text
     .replace(/\*\*(.*?)\*\*/g, "$1")
     .replace(/\n+/g, " ")
     .trim();
 
-// Derive a display title from content
 const deriveTitle = (note) => {
   if (note.is_ai_generated) return "AI Summary";
   const firstLine = note.content.split("\n")[0].trim();
   return firstLine.length > 40 ? firstLine.slice(0, 40) + "…" : firstLine;
 };
 
-// Simple inline markdown renderer (bold only — enough for AI summaries)
 function SimpleMarkdown({ text }) {
   const parts = text.split(/(\*\*.*?\*\*)/g);
   return (
@@ -88,16 +51,10 @@ function DeleteConfirmModal({ onConfirm, onCancel }) {
         <h2 className="text-base font-bold text-gray-900 mb-2">Delete this note?</h2>
         <p className="text-sm text-gray-500 mb-6">This action can't be undone.</p>
         <div className="flex gap-3 justify-end">
-          <button
-            onClick={onCancel}
-            className="px-5 py-2 text-sm rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition"
-          >
+          <button onClick={onCancel} className="px-5 py-2 text-sm rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition">
             Cancel
           </button>
-          <button
-            onClick={onConfirm}
-            className="px-5 py-2 text-sm rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 active:scale-95 transition"
-          >
+          <button onClick={onConfirm} className="px-5 py-2 text-sm rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 active:scale-95 transition">
             Delete
           </button>
         </div>
@@ -107,9 +64,9 @@ function DeleteConfirmModal({ onConfirm, onCancel }) {
 }
 
 // ================================
-// Add Note Modal (for new manual notes only)
+// Add Note Modal
 // ================================
-function AddNoteModal({ onClose, onSave }) {
+function AddNoteModal({ onClose, onSave, loading }) {
   const [content, setContent] = useState("");
 
   const handleSave = () => {
@@ -133,17 +90,15 @@ function AddNoteModal({ onClose, onSave }) {
           />
         </div>
         <div className="flex gap-3 justify-end">
-          <button
-            onClick={onClose}
-            className="px-5 py-2 text-sm rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition"
-          >
+          <button onClick={onClose} className="px-5 py-2 text-sm rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition">
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="px-5 py-2 text-sm rounded-xl bg-gray-900 text-white font-semibold hover:bg-gray-700 active:scale-95 transition"
+            disabled={loading}
+            className="px-5 py-2 text-sm rounded-xl bg-gray-900 text-white font-semibold hover:bg-gray-700 active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Save
+            {loading ? "Saving..." : "Save"}
           </button>
         </div>
       </div>
@@ -152,21 +107,23 @@ function AddNoteModal({ onClose, onSave }) {
 }
 
 // ================================
-// Note Drawer — view full content + edit inline
+// Note Drawer
 // ================================
 function NoteDrawer({ note, onClose, onSave, onDelete }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(note.content);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  // Close on backdrop click
   const handleBackdrop = (e) => {
     if (e.target === e.currentTarget) onClose();
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editContent.trim()) return;
-    onSave(note._id, { content: editContent });
+    setSaving(true);
+    await onSave(note._id, { content: editContent });
+    setSaving(false);
     setIsEditing(false);
   };
 
@@ -177,13 +134,8 @@ function NoteDrawer({ note, onClose, onSave, onDelete }) {
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/20 z-40"
-        onClick={handleBackdrop}
-      />
+      <div className="fixed inset-0 bg-black/20 z-40" onClick={handleBackdrop} />
 
-      {/* Drawer */}
       <div className="fixed top-0 right-0 h-full w-full max-w-md bg-white z-50 shadow-2xl flex flex-col animate-slide-in">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
@@ -197,45 +149,29 @@ function NoteDrawer({ note, onClose, onSave, onDelete }) {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Edit / Save buttons */}
             {!note.is_ai_generated && !isEditing && (
-              <button
-                onClick={() => setIsEditing(true)}
-                className="text-sm text-gray-500 hover:text-gray-900 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition"
-              >
+              <button onClick={() => setIsEditing(true)} className="text-sm text-gray-500 hover:text-gray-900 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition">
                 Edit
               </button>
             )}
             {isEditing && (
               <>
-                <button
-                  onClick={handleCancelEdit}
-                  className="text-sm text-gray-500 hover:text-gray-900 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition"
-                >
+                <button onClick={handleCancelEdit} className="text-sm text-gray-500 hover:text-gray-900 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition">
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
-                  className="text-sm bg-gray-900 text-white font-semibold px-4 py-1.5 rounded-lg hover:bg-gray-700 active:scale-95 transition"
+                  disabled={saving}
+                  className="text-sm bg-gray-900 text-white font-semibold px-4 py-1.5 rounded-lg hover:bg-gray-700 active:scale-95 transition disabled:opacity-50"
                 >
-                  Save
+                  {saving ? "Saving..." : "Save"}
                 </button>
               </>
             )}
-
-            {/* Delete */}
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="text-sm text-red-400 hover:text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50 transition"
-            >
+            <button onClick={() => setShowDeleteConfirm(true)} className="text-sm text-red-400 hover:text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50 transition">
               Delete
             </button>
-
-            {/* Close */}
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-700 p-1.5 rounded-lg hover:bg-gray-100 transition"
-            >
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-700 p-1.5 rounded-lg hover:bg-gray-100 transition">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -264,7 +200,7 @@ function NoteDrawer({ note, onClose, onSave, onDelete }) {
           )}
         </div>
 
-        {/* Footer metadata */}
+        {/* Footer */}
         <div className="px-6 py-4 border-t border-gray-100 text-xs text-gray-400 flex gap-4">
           <span>Created {formatDate(note.createdAt)}</span>
           {note.updatedAt !== note.createdAt && (
@@ -273,7 +209,6 @@ function NoteDrawer({ note, onClose, onSave, onDelete }) {
         </div>
       </div>
 
-      {/* Delete confirm */}
       {showDeleteConfirm && (
         <DeleteConfirmModal
           onConfirm={() => {
@@ -299,14 +234,10 @@ function NoteCard({ note, onClick, onDelete }) {
   return (
     <div
       className="relative bg-gray-50 border border-gray-100 rounded-2xl p-4 shadow-sm flex flex-col justify-between min-h-[140px] cursor-pointer hover:border-gray-300 hover:shadow-md transition-all group"
-      onClick={() => {
-        if (!menuOpen) onClick(note);
-      }}
+      onClick={() => { if (!menuOpen) onClick(note); }}
     >
-      {/* Top */}
       <div className="flex justify-between items-start gap-2">
         <div className="flex-1 min-w-0">
-          {/* AI badge */}
           {note.is_ai_generated && (
             <span className="inline-block text-[10px] bg-violet-100 text-violet-500 font-semibold px-2 py-0.5 rounded-full mb-1.5">
               ✦ AI Generated
@@ -316,7 +247,6 @@ function NoteCard({ note, onClick, onDelete }) {
           <p className="text-xs text-gray-400 mt-1 line-clamp-3 leading-relaxed">{preview}</p>
         </div>
 
-        {/* 3-dot menu — only for non-AI notes or all notes for delete */}
         <div className="relative flex-shrink-0" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
@@ -328,22 +258,14 @@ function NoteCard({ note, onClick, onDelete }) {
               <circle cx="19" cy="12" r="1.5" />
             </svg>
           </button>
-
           {menuOpen && (
             <>
-              {/* Click outside to close */}
               <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
               <div className="absolute right-0 mt-1 w-32 bg-white border border-gray-100 rounded-xl shadow-lg z-20 overflow-hidden">
-                <button
-                  onClick={() => { onClick(note); setMenuOpen(false); }}
-                  className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
-                >
+                <button onClick={() => { onClick(note); setMenuOpen(false); }} className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition">
                   View
                 </button>
-                <button
-                  onClick={() => { onDelete(note._id); setMenuOpen(false); }}
-                  className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition"
-                >
+                <button onClick={() => { onDelete(note._id); setMenuOpen(false); }} className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition">
                   Delete
                 </button>
               </div>
@@ -352,10 +274,7 @@ function NoteCard({ note, onClick, onDelete }) {
         </div>
       </div>
 
-      {/* Date */}
       <p className="text-[11px] text-gray-300 text-right mt-3">{formatDate(note.createdAt)}</p>
-
-      {/* Hover hint */}
       <div className="absolute bottom-3 left-4 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-gray-400">
         Click to open →
       </div>
@@ -367,70 +286,58 @@ function NoteCard({ note, onClick, onDelete }) {
 // Main Page
 // ================================
 export default function Notes() {
-  const [notes, setNotes] = useState(DUMMY_NOTES);
+  const [notes, setNotes] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [activeNote, setActiveNote] = useState(null);
-  const [deletingId, setDeletingId] = useState(null); // for quick delete from card
+  const [loading, setLoading] = useState(true);
+  const [addLoading, setAddLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  // TODO: Replace with API call — GET /api/notes
-  // useEffect(() => {
-  //   fetch("/api/notes")
-  //     .then(res => res.json())
-  //     .then(data => {
-  //       if (data.success) setNotes(data.notes);
-  //     });
-  // }, []);
+  // Fetch semua notes saat pertama load
+  useEffect(() => {
+    notesApi.getAll()
+      .then((data) => setNotes(data.notes))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     setNotes((prev) => prev.filter((n) => n._id !== id));
-    // TODO: DELETE /api/notes/:id
-    // fetch(`/api/notes/${id}`, { method: "DELETE" });
+    try {
+      await notesApi.delete(id);
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
-  const handleSave = (id, { content }) => {
+  const handleSave = async (id, { content }) => {
     setNotes((prev) =>
-      prev.map((n) =>
-        n._id === id
-          ? { ...n, content, updatedAt: new Date().toISOString() }
-          : n
-      )
+      prev.map((n) => n._id === id ? { ...n, content, updatedAt: new Date().toISOString() } : n)
     );
-    // Update active note too so drawer reflects changes immediately
     setActiveNote((prev) =>
       prev?._id === id ? { ...prev, content, updatedAt: new Date().toISOString() } : prev
     );
-    // TODO: PUT /api/notes/:id
-    // fetch(`/api/notes/${id}`, {
-    //   method: "PUT",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ content }),
-    // });
+    try {
+      await notesApi.update(id, content);
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
-  const handleAddNote = ({ content }) => {
-    const newNote = {
-      _id: Date.now().toString(),
-      user_id: "",
-      material_id: null,
-      content,
-      is_ai_generated: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setNotes((prev) => [newNote, ...prev]);
-    setShowAddModal(false);
-    // TODO: POST /api/notes
-    // fetch("/api/notes", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ content }),
-    // }).then(res => res.json()).then(data => {
-    //   if (data.success) setNotes(prev => [data.note, ...prev]);
-    // });
+  const handleAddNote = async ({ content }) => {
+    setAddLoading(true);
+    try {
+      const data = await notesApi.create(content);
+      setNotes((prev) => [data.note, ...prev]);
+      setShowAddModal(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setAddLoading(false);
+    }
   };
 
-  // Separate AI and manual notes
-  const aiNotes = notes.filter((n) => n.is_ai_generated);
+  const aiNotes     = notes.filter((n) => n.is_ai_generated);
   const manualNotes = notes.filter((n) => !n.is_ai_generated);
 
   return (
@@ -449,45 +356,45 @@ export default function Notes() {
           </button>
         </div>
 
-        {notes.length === 0 ? (
+        {/* Error banner */}
+        {error && (
+          <div className="mb-4 px-4 py-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-500">
+            {error}
+            <button onClick={() => setError("")} className="ml-3 font-semibold underline">Dismiss</button>
+          </div>
+        )}
+
+        {/* Loading */}
+        {loading && (
+          <p className="text-center text-gray-400 text-sm py-16">Loading notes...</p>
+        )}
+
+        {/* Empty */}
+        {!loading && notes.length === 0 && (
           <p className="text-center text-gray-400 text-sm py-16">
             No notes yet. Click "+ Add Note" to get started!
           </p>
-        ) : (
+        )}
+
+        {/* Notes */}
+        {!loading && notes.length > 0 && (
           <div className="space-y-8">
-            {/* Manual notes */}
             {manualNotes.length > 0 && (
               <section>
-                <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
-                  My Notes
-                </h2>
+                <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">My Notes</h2>
                 <div className="grid grid-cols-2 gap-4">
                   {manualNotes.map((note) => (
-                    <NoteCard
-                      key={note._id}
-                      note={note}
-                      onClick={setActiveNote}
-                      onDelete={handleDelete}
-                    />
+                    <NoteCard key={note._id} note={note} onClick={setActiveNote} onDelete={handleDelete} />
                   ))}
                 </div>
               </section>
             )}
-
-            {/* AI-generated notes */}
             {aiNotes.length > 0 && (
               <section>
-                <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
-                  AI Summaries
-                </h2>
+                <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">AI Summaries</h2>
                 <div className="grid grid-cols-2 gap-4">
                   {aiNotes.map((note) => (
-                    <NoteCard
-                      key={note._id}
-                      note={note}
-                      onClick={setActiveNote}
-                      onDelete={handleDelete}
-                    />
+                    <NoteCard key={note._id} note={note} onClick={setActiveNote} onDelete={handleDelete} />
                   ))}
                 </div>
               </section>
@@ -496,15 +403,14 @@ export default function Notes() {
         )}
       </div>
 
-      {/* Add Note Modal */}
       {showAddModal && (
         <AddNoteModal
           onClose={() => setShowAddModal(false)}
           onSave={handleAddNote}
+          loading={addLoading}
         />
       )}
 
-      {/* Note Drawer */}
       {activeNote && (
         <NoteDrawer
           note={activeNote}
@@ -514,7 +420,6 @@ export default function Notes() {
         />
       )}
 
-      {/* Drawer slide-in animation */}
       <style>{`
         @keyframes slide-in {
           from { transform: translateX(100%); opacity: 0; }

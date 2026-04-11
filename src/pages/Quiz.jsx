@@ -1,35 +1,69 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { useMood } from "../context/MoodContext";
-import { quizData } from "../data/quizData";
+import { quizApi } from "../lib/api";
 import QuizResult from "./QuizResult";
-
-const moodKeyMap = {
-  focused: "focused",
-  normal: "normal",
-  lowEnergy: "lowEnergy",
-  tired: "tired",
-};
 
 export default function Quiz() {
   const navigate = useNavigate();
-  const { selectedMood } = useMood();
-
-  const moodKey = moodKeyMap[selectedMood] || "focused";
-  const quiz = quizData[moodKey];
-  const questions = quiz.questions;
-  const total = questions.length;
-
+  const { summary } = useMood();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [answered, setAnswered] = useState(false);
   const [score, setScore] = useState(0);
-  const [userAnswers, setUserAnswers] = useState([]); 
+  const [userAnswers, setUserAnswers] = useState([]);
   const [finished, setFinished] = useState(false);
 
+  // Generate quiz dari summary
+  useEffect(() => {
+    const generateQuiz = async () => {
+      if (!summary) {
+        setError("No study material found. Please summarize something first.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        
+        // ✅ Format yang benar: materialContent
+        const response = await quizApi.generate({
+          materialContent: summary.summary || summary.content || summary.text
+        });
+        
+        console.log("Quiz response:", response);
+        
+        // Extract questions dari response (sesuaikan dengan struktur response)
+        let quizQuestions = [];
+        if (response.quiz && response.quiz.questions) {
+          quizQuestions = response.quiz.questions;
+        } else if (response.questions) {
+          quizQuestions = response.questions;
+        } else if (response.data && response.data.questions) {
+          quizQuestions = response.data.questions;
+        } else {
+          // Fallback jika format berbeda
+          quizQuestions = response.quiz || [];
+        }
+        
+        setQuestions(quizQuestions);
+      } catch (err) {
+        console.error("Failed to generate quiz:", err);
+        setError(err.message || "Failed to generate quiz");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    generateQuiz();
+  }, [summary]);
+
+  const total = questions.length;
   const current = questions[currentIndex];
-  const isCorrect = selectedIndex === current.correctIndex;
 
   const handleSelect = (idx) => {
     if (answered) return;
@@ -65,13 +99,66 @@ export default function Quiz() {
     return "bg-white border border-gray-200 text-gray-400";
   };
 
+  // Loading state
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-screen bg-white px-8 py-8 max-w-2xl mx-auto text-center">
+          <div className="animate-pulse">
+            <p className="text-gray-500">Generating quiz questions...</p>
+            <p className="text-sm text-gray-400 mt-2">This may take a moment</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-screen bg-white px-8 py-8 max-w-2xl mx-auto text-center">
+          <div className="bg-red-50 rounded-2xl p-6">
+            <p className="text-red-600">{error}</p>
+            <button
+              onClick={() => navigate("/learn/results")}
+              className="mt-4 px-4 py-2 bg-gray-900 text-white rounded-full text-sm"
+            >
+              Back to Results
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // No questions
+  if (questions.length === 0) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-screen bg-white px-8 py-8 max-w-2xl mx-auto text-center">
+          <p className="text-gray-500">No quiz questions available.</p>
+          <button
+            onClick={() => navigate("/learn/results")}
+            className="mt-4 px-4 py-2 bg-gray-900 text-white rounded-full text-sm"
+          >
+            Back to Results
+          </button>
+        </div>
+      </>
+    );
+  }
+
   if (finished) {
     return (
       <QuizResult
         score={score}
         total={total}
         questions={questions}
-        userAnswers={[...userAnswers, selectedIndex]} 
+        userAnswers={[...userAnswers, selectedIndex]}
       />
     );
   }
@@ -84,7 +171,7 @@ export default function Quiz() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">QUIZ</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Pertanyaan {currentIndex + 1} dari {total}
+            Question {currentIndex + 1} of {total}
           </p>
         </div>
 
@@ -110,18 +197,20 @@ export default function Quiz() {
         {answered && (
           <div
             className={`px-5 py-3.5 rounded-xl text-sm mb-5 ${
-              isCorrect ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+              selectedIndex === current.correctIndex 
+                ? "bg-green-100 text-green-800" 
+                : "bg-red-100 text-red-800"
             }`}
           >
-            {isCorrect ? (
+            {selectedIndex === current.correctIndex ? (
               <>
                 <span className="font-bold">Correct!</span> The answer is{" "}
-                <span className="font-bold">{current.options[current.correctIndex].charAt(0)}</span>
+                <span className="font-bold">{current.options[current.correctIndex]}</span>
               </>
             ) : (
               <>
                 <span className="font-bold">X That is not correct.</span> The correct answer is{" "}
-                <span className="font-bold">{current.options[current.correctIndex].charAt(0)}</span>.
+                <span className="font-bold">{current.options[current.correctIndex]}</span>.
               </>
             )}
           </div>
@@ -133,7 +222,7 @@ export default function Quiz() {
             onClick={handleNext}
             className="flex items-center gap-2 text-sm font-semibold text-gray-800 border border-gray-300 px-5 py-2.5 rounded-xl hover:bg-gray-50 active:scale-95 transition"
           >
-            Next Questions <span className="text-base">→</span>
+            Next Question <span className="text-base">→</span>
           </button>
         )}
       </div>
