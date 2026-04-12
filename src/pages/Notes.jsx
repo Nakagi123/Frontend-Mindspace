@@ -17,12 +17,6 @@ const stripMarkdown = (text) =>
     .replace(/\n+/g, " ")
     .trim();
 
-const deriveTitle = (note) => {
-  if (note.is_ai_generated) return "AI Summary";
-  const firstLine = note.content.split("\n")[0].trim();
-  return firstLine.length > 40 ? firstLine.slice(0, 40) + "…" : firstLine;
-};
-
 function SimpleMarkdown({ text }) {
   const parts = text.split(/(\*\*.*?\*\*)/g);
   return (
@@ -58,48 +52,63 @@ function DeleteConfirmModal({ onConfirm, onCancel }) {
 }
 
 function AddNoteModal({ onClose, onSave, loading }) {
+  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
   const handleSave = () => {
     if (!content.trim()) return;
-    onSave({ content });
+    onSave({ title, content }); 
   };
 
-  return (
-    <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Add New Note</h2>
-        <div className="mb-6">
-          <label className="block text-sm text-gray-500 mb-1">Content</label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Write your note here..."
-            rows={5}
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition resize-none"
-            autoFocus
-          />
-        </div>
-        <div className="flex gap-3 justify-end">
-          <button onClick={onClose} className="px-5 py-2 text-sm rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition">
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={loading}
-            className="px-5 py-2 text-sm rounded-xl bg-gray-900 text-white font-semibold hover:bg-gray-700 active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? "Saving..." : "Save"}
-          </button>
-        </div>
+ return (
+  <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center px-4">
+    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+      <h2 className="text-lg font-bold text-gray-900 mb-4">Add New Note</h2>
+
+      <div className="mb-4">
+        <label className="block text-sm text-gray-500 mb-1">Title</label>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="e.g. Biology Notes"
+          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
+        />
+      </div>
+
+      <div className="mb-6">
+        <label className="block text-sm text-gray-500 mb-1">Content</label>
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Write your note here..."
+          rows={5}
+          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition resize-none"
+          autoFocus
+        />
+      </div>
+
+      <div className="flex gap-3 justify-end">
+        <button onClick={onClose} className="px-5 py-2 text-sm rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition">
+          Cancel
+        </button>
+        <button
+          onClick={handleSave}
+          disabled={loading}
+          className="px-5 py-2 text-sm rounded-xl bg-gray-900 text-white font-semibold hover:bg-gray-700 active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? "Saving..." : "Save"}
+        </button>
       </div>
     </div>
-  );
+  </div>
+);
 }
 
 function NoteDrawer({ note, onClose, onSave, onDelete }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(note.content);
+  const [editTitle, setEditTitle] = useState(note.title || "");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -110,13 +119,14 @@ function NoteDrawer({ note, onClose, onSave, onDelete }) {
   const handleSave = async () => {
     if (!editContent.trim()) return;
     setSaving(true);
-    await onSave(note._id, { content: editContent });
+     await onSave(note._id, { title: editTitle, content: editContent });
     setSaving(false);
     setIsEditing(false);
   };
 
   const handleCancelEdit = () => {
     setEditContent(note.content);
+    setEditTitle(note.title || "");
     setIsEditing(false);
   };
 
@@ -170,13 +180,22 @@ function NoteDrawer({ note, onClose, onSave, onDelete }) {
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-6 py-6">
           {isEditing ? (
-            <textarea
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
-              rows={12}
-              autoFocus
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 outline-none focus:border-gray-400 transition resize-none leading-relaxed"
-            />
+            <div className="flex flex-col gap-3">
+              <input
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                placeholder="Note title..."
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-gray-800 outline-none focus:border-gray-400 transition"
+              />
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                rows={12}
+                autoFocus
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 outline-none focus:border-gray-400 transition resize-none leading-relaxed"
+              />
+            </div>
           ) : (
             <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
               {note.content.split("\n").map((line, i) => (
@@ -214,7 +233,7 @@ function NoteDrawer({ note, onClose, onSave, onDelete }) {
 function NoteCard({ note, onClick, onDelete }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const preview = stripMarkdown(note.content);
-  const title = deriveTitle(note);
+  const title = note.title || "Untitled Note";
 
   return (
     <div
@@ -278,10 +297,12 @@ export default function Notes() {
   const [addLoading, setAddLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Fetch semua notes saat pertama load
+ 
   useEffect(() => {
     notesApi.getAll()
-      .then((data) => setNotes(data.notes))
+      .then((data) => {
+        setNotes(data.notes);
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
@@ -295,24 +316,24 @@ export default function Notes() {
     }
   };
 
-  const handleSave = async (id, { content }) => {
+  const handleSave = async (id, { title, content }) => {
     setNotes((prev) =>
-      prev.map((n) => n._id === id ? { ...n, content, updatedAt: new Date().toISOString() } : n)
+      prev.map((n) => n._id === id ? { ...n, title, content, updatedAt: new Date().toISOString() } : n)
     );
     setActiveNote((prev) =>
-      prev?._id === id ? { ...prev, content, updatedAt: new Date().toISOString() } : prev
+      prev?._id === id ? { ...prev, title, content, updatedAt: new Date().toISOString() } : prev
     );
     try {
-      await notesApi.update(id, content);
+      await notesApi.update(id, { title, content });
     } catch (err) {
       setError(err.message);
     }
   };
 
-  const handleAddNote = async ({ content }) => {
+  const handleAddNote = async ({ title, content }) => {
     setAddLoading(true);
     try {
-      const data = await notesApi.create(content);
+      const data = await notesApi.create(title, content);
       setNotes((prev) => [data.note, ...prev]);
       setShowAddModal(false);
     } catch (err) {

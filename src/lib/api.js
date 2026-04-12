@@ -61,8 +61,8 @@ export const authApi = {
 export const notesApi = {
   getAll: () => req("GET", "/api/notes"),
   getOne: (id) => req("GET", `/api/notes/${id}`),
-  create: (content) => req("POST", "/api/notes", { content }), 
-  update: (id, content) => req("PUT", `/api/notes/${id}`, { content }),
+  create: (title, content) => req("POST", "/api/notes", { title, content }), 
+  update: (id, body) => req("PUT", `/api/notes/${id}`, body),
   delete: (id) => req("DELETE", `/api/notes/${id}`),
 };
 
